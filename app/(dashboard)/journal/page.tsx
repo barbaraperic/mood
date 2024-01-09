@@ -1,11 +1,10 @@
 import EntryCards from '@/components/EntryCards'
-import EntryCard from '@/components/EntryCards'
 import NewEntryCard from '@/components/NewEntryCard'
 import { getUserByClerkId } from '@/utils/auth'
 import { prisma } from '@/utils/db'
+import Link from 'next/link'
 
 const getEntries = async () => {
-  //
   const user = await getUserByClerkId()
   const entries = await prisma.journalEntry.findMany({
     where: {
@@ -27,7 +26,9 @@ const JournalPage = async () => {
       <div className="grid grid-cols-3 gap-4 py-10">
         <NewEntryCard />
         {entries.map((entry) => (
-          <EntryCards key={entry.id} entry={entry} />
+          <Link href={`/journal/${entry.id}`} key={entry.id}>
+            <EntryCards entry={entry} />
+          </Link>
         ))}
       </div>
     </div>

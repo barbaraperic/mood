@@ -29,7 +29,7 @@ model JournalEntry {
   user      User      @relation(fields: [userId], references: [id])
   analysis  Analysis?
 
-  @@index([userId])
+  @@index([userId, id])
 }
 
 model Analysis {
