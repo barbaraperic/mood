@@ -6,7 +6,7 @@ import { useAutosave } from 'react-autosave'
 const Editor = ({ entry }) => {
   const [value, setValue] = useState(entry.content)
   const [isLoading, setIsLoading] = useState(false)
-  // const [analysis, setAnalysis] = useState(analysisData)
+  const [analysis, setAnalysis] = useState({})
 
   useAutosave({
     data: value,
@@ -14,6 +14,14 @@ const Editor = ({ entry }) => {
       setIsLoading(true)
       const updated = await updateEntry(entry.id, _value)
       console.log('updated', updated)
+      // setAnalysis(() => {
+      //   return {
+      //     summary: updated.analysis.summary,
+      //     subject: updated.analysis.subject,
+      //     mood: updated.analysis.mood,
+      //     negative: updated.analysis.negative,
+      //   }
+      // })
       // setAnalysis((currentState) => {
       //   const updated = currentState.map((item) => {
       //     if (item.name.toLowerCase() in updatedAnalysisValues) {

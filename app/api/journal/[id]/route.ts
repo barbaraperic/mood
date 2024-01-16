@@ -15,7 +15,9 @@ export const PATCH = async (request: Request, { params }) => {
         userId: user.id,
       },
     },
-    data: updates,
+    data: {
+      content: updates,
+    },
   })
 
   const analysis = await analyzeEntry(entry)
