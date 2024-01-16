@@ -1,20 +1,37 @@
+import { analyzeEntry } from '@/utils/ai'
 import { getUserByClerkId } from '@/utils/auth'
 import { prisma } from '@/utils/db'
+import { revalidatePath } from 'next/cache'
 import { NextResponse } from 'next/server'
 
-export const PATCH = async (request, { params }) => {
+export const PATCH = async (request: Request, { params }) => {
+  const { updates } = await request.json()
   const user = await getUserByClerkId()
-  const { content } = await request.json()
 
-  const updatedEntry = await prisma.journalEntry.update({
+  const entry = await prisma.journalEntry.update({
     where: {
-      userId: user.id,
-      id: params.id,
+      userId_id: {
+        id: params.id,
+        userId: user.id,
+      },
     },
-    data: {
-      content,
+    data: updates,
+  })
+
+  const analysis = await analyzeEntry(entry)
+  const savedAnalysis = await prisma.analysis.upsert({
+    where: {
+      entryId: entry.id,
+    },
+    update: { ...analysis },
+    create: {
+      entryId: entry.id,
+      userId: user.id,
+      ...analysis,
     },
   })
 
-  return NextResponse.json({ data: updatedEntry })
+  revalidatePath(`/journal/${entry.id}`)
+
+  return NextResponse.json({ data: { ...entry, analysis: savedAnalysis } })
 }
