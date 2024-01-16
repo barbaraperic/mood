@@ -6,33 +6,23 @@ import { useAutosave } from 'react-autosave'
 const Editor = ({ entry }) => {
   const [value, setValue] = useState(entry.content)
   const [isLoading, setIsLoading] = useState(false)
-  const [analysis, setAnalysis] = useState({})
+  const [currentEntry, setCurrentEntry] = useState(entry)
+
+  const { mood, summary, subject, color, negative } = currentEntry?.analysis
+
+  const analysisData = [
+    { name: 'Summary', value: summary },
+    { name: 'Subject', value: subject },
+    { name: 'Mood', value: mood },
+    { name: 'Negative', value: negative.toString() },
+  ]
 
   useAutosave({
     data: value,
     onSave: async (_value) => {
       setIsLoading(true)
-      const updated = await updateEntry(entry.id, _value)
-      console.log('updated', updated)
-      // setAnalysis(() => {
-      //   return {
-      //     summary: updated.analysis.summary,
-      //     subject: updated.analysis.subject,
-      //     mood: updated.analysis.mood,
-      //     negative: updated.analysis.negative,
-      //   }
-      // })
-      // setAnalysis((currentState) => {
-      //   const updated = currentState.map((item) => {
-      //     if (item.name.toLowerCase() in updatedAnalysisValues) {
-      //       return {
-      //         ...item,
-      //         value: updatedAnalysisValues[item.name.toLowerCase()],
-      //       }
-      //     }
-      //   })
-      //   return updated
-      // })
+      const updated = await updateEntry(currentEntry.id, _value)
+      setCurrentEntry(updated)
       setIsLoading(false)
     },
   })
@@ -48,19 +38,19 @@ const Editor = ({ entry }) => {
         ></textarea>
       </div>
       <div className="border-l border-black/10">
-        <div className="bg-blue-300 px-10 py-10">
+        <div className="px-10 py-10" style={{ backgroundColor: color }}>
           <h2 className="text-2xl">Analysis</h2>
         </div>
         <ul>
-          {/* {analysis.map((data) => (
+          {analysisData.map((data) => (
             <li
               key={data?.name}
               className="px-2 py-4 flex items-center justify-between border-b border-t border-black/10"
             >
               <span className="text-lg font-semibold">{data?.name}</span>
-              <span>{data?.value}</span>
+              <span>{data?.value.toString()}</span>
             </li>
-          ))} */}
+          ))}
         </ul>
       </div>
     </div>
