@@ -65,7 +65,7 @@ export const analyzeEntry = async (entry) => {
   }
 }
 
-const qa = async (question, entries) => {
+export const qa = async (question, entries) => {
   // turn everything in a langchain doc, and attach metadata
   const docs = entries.map((entry) => {
     return new Document({
@@ -91,7 +91,7 @@ const qa = async (question, entries) => {
 
   // API call to the AI to get result
   const res = await chain.call({
-    input_document: relevantDocs,
+    input_documents: relevantDocs,
     question,
   })
 
