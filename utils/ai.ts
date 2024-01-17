@@ -1,5 +1,9 @@
+import { loadQARefineChain } from 'langchain/chains'
+import { Document } from 'langchain/document'
+import { OpenAIEmbeddings } from 'langchain/embeddings/openai'
 import { OpenAI } from 'langchain/llms/openai'
 import { PromptTemplate } from 'langchain/prompts'
+import { MemoryVectorStore } from 'langchain/vectorstores/memory'
 
 import {
   OutputFixingParser,
@@ -59,4 +63,37 @@ export const analyzeEntry = async (entry) => {
     const fix = await fixParser.parse(output)
     return fix
   }
+}
+
+const qa = async (question, entries) => {
+  // turn everything in a langchain doc, and attach metadata
+  const docs = entries.map((entry) => {
+    return new Document({
+      pageContent: entry.content,
+      metadata: { id: entry.id, createdAt: entry.createdAt },
+    })
+  })
+
+  // create model
+  const model = new OpenAI({ temperature: 0, modelName: 'gpt-3.5-turbo' })
+
+  // create chain - multiple LLM calls which you can chain together, have output of one be input of another
+  const chain = loadQARefineChain(model)
+
+  // embeddings are just a group of vectors
+  const embeddings = new OpenAIEmbeddings()
+
+  // store in a memory
+  const store = await MemoryVectorStore.fromDocuments(docs, embeddings)
+
+  // perform similarity search
+  const relevantDocs = await store.similaritySearch(question)
+
+  // API call to the AI to get result
+  const res = await chain.call({
+    input_document: relevantDocs,
+    question,
+  })
+
+  return res.output_text
 }

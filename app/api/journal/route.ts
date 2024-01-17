@@ -1,4 +1,3 @@
-import { analyse } from '@/utils/ai'
 import { getUserByClerkId } from '@/utils/auth'
 import { prisma } from '@/utils/db'
 import { NextResponse } from 'next/server'
@@ -7,16 +6,22 @@ export const POST = async () => {
   const user = await getUserByClerkId()
   const entry = await prisma.journalEntry.create({
     data: {
-      userId: user.id,
       content: 'Write about your day',
-    },
-  })
-
-  const analysis = await analyse(entry.content)
-  await prisma.analysis.create({
-    data: {
-      entryId: entry.id,
-      ...analysis,
+      user: {
+        connect: {
+          id: user.id,
+        },
+      },
+      analysis: {
+        create: {
+          mood: 'Neutral',
+          subject: 'None',
+          negative: false,
+          summary: 'None',
+          color: '#0101fe',
+          userId: user.id,
+        },
+      },
     },
   })
 
